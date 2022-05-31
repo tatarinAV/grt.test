@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Discount;
 use App\Http\Requests\StoreDiscountRequest;
 use App\Http\Requests\UpdateDiscountRequest;
+use Illuminate\Support\Facades\Auth;
 
 class DiscountController extends Controller
 {
@@ -15,7 +16,7 @@ class DiscountController extends Controller
      */
     public function index()
     {
-        //
+        return Discount::all();
     }
 
     /**
@@ -36,7 +37,24 @@ class DiscountController extends Controller
      */
     public function store(StoreDiscountRequest $request)
     {
-        //
+        $user = Auth::user();
+        if(!policy(Discount::class)->create($user)){
+            return response()->json(['store' => 'error']);
+        }
+
+        $validator = Validator::make($request->all(),[
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'discount' => 'required|numeric|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors());
+        }
+
+
+
+        return Discount::create($request->all());
     }
 
     /**
@@ -47,7 +65,7 @@ class DiscountController extends Controller
      */
     public function show(Discount $discount)
     {
-        //
+        return Discount::find($discount);
     }
 
     /**
@@ -70,7 +88,24 @@ class DiscountController extends Controller
      */
     public function update(UpdateDiscountRequest $request, Discount $discount)
     {
-        //
+        $user = Auth::user();
+        if(!policy(Discount::class)->update($user)){
+            return response()->json(['store' => 'error']);
+        }
+        $discount = Discount::find($discount);
+
+        $validator = Validator::make($request->all(),[
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'discount' => 'required|numeric|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors());
+        }
+
+
+        return $discount->update($request->all());
     }
 
     /**
@@ -81,6 +116,10 @@ class DiscountController extends Controller
      */
     public function destroy(Discount $discount)
     {
-        //
+        $user = Auth::user();
+        if(!policy(Discount::class)->create($user)){
+            return response()->json(['store' => 'error']);
+        }
+        return Discount::destroy($discount);
     }
 }

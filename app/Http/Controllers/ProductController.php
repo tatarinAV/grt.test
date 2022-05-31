@@ -1,7 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Validator;
 use App\Models\Product;
 
@@ -14,8 +17,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        //
-        return response()->json(['ok' => 'ok']);
+        return Product::all();
     }
 
     /**
@@ -25,7 +27,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -36,18 +38,33 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        //
+        $user = Auth::user();
+        if(!policy(Product::class)->create($user)){
+            return response()->json(['store' => 'error']);
+        }
+
+        $validator = Validator::make($request->all(),[
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors());
+        }
+
+        return Product::create($request->all());
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Product  $product
+     * @param  \App\Models\Product  $id
      * @return \Illuminate\Http\Response
      */
     public function show(Product $product)
     {
         //
+        return Product::find($product);
     }
 
     /**
@@ -70,7 +87,43 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        //
+        $user = Auth::user();
+        if(!policy(Product::class)->update($user)){
+            return response()->json(['store' => 'error']);
+        }
+        $product = Product::find($product);
+
+        $validator = Validator::make($request->all(),[
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors());
+        }
+        $data = $request->all();
+
+        return $product->update($request->all());
+    }
+
+    public function updatePrice(Request $request, Product $product)
+    {
+        $user = Auth::user();
+        if(!policy(Product::class)->update($user)){
+            return response()->json(['store' => 'error']);
+        }
+        $product = Product::find($product);
+
+        $validator = Validator::make($request->all(),[
+            'price' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors());
+        }
+
+        return $product->updatePrice($request->all());
+
     }
 
     /**
@@ -81,6 +134,10 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        $user = Auth::user();
+        if(!policy(Product::class)->create($user)){
+            return response()->json(['store' => 'error']);
+        }
+        return Product::destroy($product);
     }
 }

@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\DiscountController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -16,16 +19,13 @@ use App\Http\Controllers\ProductController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::get('/', [ProductController::class, 'index']);
-
-
+Route::post('/register', [AuthenticationController::class, 'register']);
+//All users
+Route::resource('products', 'App\Http\Controllers\ProductController')->only(['index', 'show']);
+Route::resource('discounts', 'App\Http\Controllers\DiscountController')->only(['index', 'show']);
+//Authorise users
 Route::group(['middleware' => 'auth:sanctum'], function() {
-    // список всех продуктов
-    Route::resource('products', 'ProductController');
-    Route::resource('discounts', 'DiscountController');
-
-});
+    Route::resource('products', 'App\Http\Controllers\ProductController')->except(['index', 'show']);
+    Route::resource('discounts', 'App\Http\Controllers\DiscountController')->except(['index', 'show']);
+    Route::put('/products/updateprice/{product}', [ProductController::class, 'updatePrice']);
+    });
