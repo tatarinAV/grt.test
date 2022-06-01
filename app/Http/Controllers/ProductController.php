@@ -40,7 +40,7 @@ class ProductController extends Controller
     {
         $user = Auth::user();
         if(!policy(Product::class)->create($user)){
-            return response()->json(['store' => 'error']);
+            abort(401);
         }
 
         $validator = Validator::make($request->all(),[
@@ -89,7 +89,7 @@ class ProductController extends Controller
     {
         $user = Auth::user();
         if(!policy(Product::class)->update($user)){
-            return response()->json(['store' => 'error']);
+            abort(401);
         }
         $product = Product::find($product);
 
@@ -136,7 +136,7 @@ class ProductController extends Controller
     {
         $user = Auth::user();
         if(!policy(Product::class)->create($user)){
-            return response()->json(['store' => 'error']);
+            abort(401);
         }
         return Product::destroy($product);
     }

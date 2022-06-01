@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
+use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
@@ -13,74 +16,42 @@ class CartController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    private $items, $products, $totalQty, $totalPrice;
+
+    public function index(Request $request)
     {
-        //
+        $cart = request->session->has('cart') ? $request->session->get('cart') : NULL;
+        return response()->json($cart);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function addCart(Request $request, $id)
     {
-        //
+        $product = Product::find($id);
+        $oldCart = $request->session->has('cart') ? $request->session->get('cart') : NULL;
+        $cart = new Cart($oldCart);
+        $cart->add($product, $product->id);
+        $request->Session->put('cart', $cart);
+        $request->session->flash('add-product', $product->name);
+        return response()->json([$id => 'added to cart']);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreCartRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreCartRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Cart  $cart
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Cart $cart)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Cart  $cart
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Cart $cart)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateCartRequest  $request
-     * @param  \App\Models\Cart  $cart
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateCartRequest $request, Cart $cart)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Cart  $cart
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Cart $cart)
-    {
-        //
+    public function add($product, $id){
+        $storedProduct = [
+            'qty' => 0,
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => $product->price,
+            'cost' => $product->price,
+        ];
+        if($this->items){
+            if(array_key_exists($id, $this->items)){
+                $storedItem = $this->items[$id];
+            }
+        }
+        $storedProduct['qty']++;
+        $storedProduct['cost'] = $product->price * $storedProduct['qty'];
+        $this->products[$id] = $storedProduct;
+        $this->totalQty++;
+        $this->totalPrice += $product->price;
     }
 }

@@ -39,7 +39,7 @@ class DiscountController extends Controller
     {
         $user = Auth::user();
         if(!policy(Discount::class)->create($user)){
-            return response()->json(['store' => 'error']);
+            abort(401);
         }
 
         $validator = Validator::make($request->all(),[
@@ -90,7 +90,7 @@ class DiscountController extends Controller
     {
         $user = Auth::user();
         if(!policy(Discount::class)->update($user)){
-            return response()->json(['store' => 'error']);
+            abort(401);
         }
         $discount = Discount::find($discount);
 
@@ -101,7 +101,7 @@ class DiscountController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors());
+            abort(401);
         }
 
 
@@ -118,7 +118,7 @@ class DiscountController extends Controller
     {
         $user = Auth::user();
         if(!policy(Discount::class)->create($user)){
-            return response()->json(['store' => 'error']);
+            abort(401);
         }
         return Discount::destroy($discount);
     }
